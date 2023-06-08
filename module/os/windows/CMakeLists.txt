@@ -128,6 +128,8 @@ function(tracewpp OUTPUT_DIR SOURCE)
         set(SCAN "${WDK_ROOT}/Include/wdf/kmdf/1.9/WdfTraceEnums.h")
         set(WPP_MACRO "WPP_INLINE __inline")
 
+        file(MAKE_DIRECTORY ${NATIVE_OUTPUT_DIR})
+
         execute_process(COMMAND "${NATIVE_WPP_DIR}/${WDK_PLATFORM}/tracewpp.exe"
  -scan:${SCAN} /D${WPP_MACRO}
  -cfgdir:${CFGDIR} -I${CMAKE_CURRENT_BINARY_DIR} -odir:${NATIVE_OUTPUT_DIR} -km -func:${TRACE}

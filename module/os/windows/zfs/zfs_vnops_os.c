@@ -1777,21 +1777,21 @@ zfs_setattr(znode_t *zp, vattr_t *vap, int flags, cred_t *cr, zuserns_t *mnt_ns)
 	 * handle times greater than 2039.  This check should be removed
 	 * once large timestamps are fully supported.
 	 */
-	if (mask & (ATTR_ATIME | ATTR_MTIME)) {
-		if (((mask & ATTR_ATIME) &&
-		    TIMESPEC_OVERFLOW(&vap->va_atime)) ||
-		    ((mask & ATTR_MTIME) &&
-		    TIMESPEC_OVERFLOW(&vap->va_mtime))) {
-			zfs_exit(zfsvfs, FTAG);
-			return (SET_ERROR(EOVERFLOW));
-		}
-	}
+	// if (mask & (ATTR_ATIME | ATTR_MTIME)) {
+	// 	if (((mask & ATTR_ATIME) &&
+	// 	    TIMESPEC_OVERFLOW(&vap->va_atime)) ||
+	// 	    ((mask & ATTR_MTIME) &&
+	// 	    TIMESPEC_OVERFLOW(&vap->va_mtime))) {
+	// 		zfs_exit(zfsvfs, FTAG);
+	// 		return (SET_ERROR(EOVERFLOW));
+	// 	}
+	// }
 	if (xoap != NULL && (mask & ATTR_XVATTR)) {
-		if (XVA_ISSET_REQ(xvap, XAT_CREATETIME) &&
-		    TIMESPEC_OVERFLOW(&vap->va_create_time)) {
-			zfs_exit(zfsvfs, FTAG);
-			return (SET_ERROR(EOVERFLOW));
-		}
+		// if (XVA_ISSET_REQ(xvap, XAT_CREATETIME) &&
+		//     TIMESPEC_OVERFLOW(&vap->va_create_time)) {
+		// 	zfs_exit(zfsvfs, FTAG);
+		// 	return (SET_ERROR(EOVERFLOW));
+		// }
 
 		if (XVA_ISSET_REQ(xvap, XAT_PROJID)) {
 			if (!dmu_objset_projectquota_enabled(os) ||
