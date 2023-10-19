@@ -79,6 +79,9 @@ jobs:
     - name: debug - get git rev
       run: git describe --always --long --dirty
 
+    - name: Install winget
+      uses: Cyberboss/install-winget@v1
+
     - name: Install Inno Setup
       run: winget install -e --id JRSoftware.InnoSetup
 
@@ -166,7 +169,6 @@ jobs:
       run: cat "${{github.workspace}}\InnoSetup-Install.log"
 
     - name: Check InstallLocation Registry Value
-      shell: powershell
       run: |
         $registryPath = "HKLM:\Software\OpenZFS\OpenZFS On Windows"
         $valueName = "InstallLocation"
@@ -308,7 +310,6 @@ jobs:
 #      run: cat "${{github.workspace}}\InnoSetup-Install.log"
 
     - name: Get InstallLocation Registry Value
-      shell: powershell
       id: registryzfs
       run: |
         $value = (Get-ItemProperty -Path "HKLM:\Software\OpenZFS\OpenZFS On Windows")."InstallLocation"
@@ -576,7 +577,6 @@ jobs:
 #      run: cat "${{github.workspace}}\InnoSetup-Install.log"
 
     - name: Get InstallLocation Registry Value
-      shell: powershell
       id: registryzfs
       run: |
         $value = (Get-ItemProperty -Path "HKLM:\Software\OpenZFS\OpenZFS On Windows")."InstallLocation"
@@ -985,7 +985,6 @@ jobs:
 ##      run: cat "${{github.workspace}}\InnoSetup-Install.log"
 ##
 ##    - name: Get InstallLocation Registry Value
-##      shell: powershell
 ##      id: registryzfs
 ##      run: |
 ##        $value = (Get-ItemProperty -Path "HKLM:\Software\OpenZFS\OpenZFS On Windows")."InstallLocation"
@@ -1565,7 +1564,6 @@ jobs:
 #      run: cat "${{github.workspace}}\InnoSetup-Install.log"
 
     - name: Get InstallLocation Registry Value
-      shell: powershell
       id: registryzfs
       run: |
         $value = (Get-ItemProperty -Path "HKLM:\Software\OpenZFS\OpenZFS On Windows")."InstallLocation"
@@ -1903,7 +1901,6 @@ jobs:
 #      run: cat "${{github.workspace}}\InnoSetup-Install.log"
 
     - name: Get InstallLocation Registry Value
-      shell: powershell
       id: registryzfs
       run: |
         $value = (Get-ItemProperty -Path "HKLM:\Software\OpenZFS\OpenZFS On Windows")."InstallLocation"
@@ -2167,7 +2164,6 @@ jobs:
 #      run: cat "${{github.workspace}}\InnoSetup-Install.log"
 
     - name: Get InstallLocation Registry Value
-      shell: powershell
       id: registryzfs
       run: |
         $value = (Get-ItemProperty -Path "HKLM:\Software\OpenZFS\OpenZFS On Windows")."InstallLocation"
@@ -2324,7 +2320,6 @@ jobs:
 #      run: cat "${{github.workspace}}\InnoSetup-Install.log"
 
     - name: Get InstallLocation Registry Value
-      shell: powershell
       id: registryzfs
       run: |
         $value = (Get-ItemProperty -Path "HKLM:\Software\OpenZFS\OpenZFS On Windows")."InstallLocation"
@@ -2493,7 +2488,6 @@ jobs:
 #      run: cat "${{github.workspace}}\InnoSetup-Install.log"
 
     - name: Get InstallLocation Registry Value
-      shell: powershell
       id: registryzfs
       run: |
         $value = (Get-ItemProperty -Path "HKLM:\Software\OpenZFS\OpenZFS On Windows")."InstallLocation"
@@ -2731,7 +2725,6 @@ jobs:
 #      run: cat "${{github.workspace}}\InnoSetup-Install.log"
 
     - name: Get InstallLocation Registry Value
-      shell: powershell
       id: registryzfs
       run: |
         $value = (Get-ItemProperty -Path "HKLM:\Software\OpenZFS\OpenZFS On Windows")."InstallLocation"
@@ -2836,7 +2829,6 @@ jobs:
       run: 'Start-Process -FilePath "${{github.workspace}}\${{ steps.zfsinstaller.outputs.filename }}" -Wait -ArgumentList "/NORESTART /ALLUSERS /VERYSILENT /LOG=`"${{github.workspace}}\InnoSetup-Install.log`""'
 
     - name: Get InstallLocation Registry Value
-      shell: powershell
       id: registryzfs
       run: |
         $value = (Get-ItemProperty -Path "HKLM:\Software\OpenZFS\OpenZFS On Windows")."InstallLocation"
