@@ -160,7 +160,7 @@ jobs:
     #  run: Start-Sleep -Seconds 30
     #  uses: iFaxity/wait-on-action@v1
     #  with:
-    #    resource: 'C:\Program Files\OpenZFS On Windows\zpool.exe'
+    #    resource: '${{ steps.registryzfs.outputs.zfspath }}\zpool.exe'
 
     - name: debug - print log
       run: cat "${{github.workspace}}\InnoSetup-Install.log"
@@ -302,19 +302,27 @@ jobs:
     #  run: Start-Sleep -Seconds 30
     #  uses: iFaxity/wait-on-action@v1
     #  with:
-    #    resource: 'C:\Program Files\OpenZFS On Windows\zpool.exe'
+    #    resource: '${{ steps.registryzfs.outputs.zfspath }}\zpool.exe'
 
 #    - name: debug - print log
 #      run: cat "${{github.workspace}}\InnoSetup-Install.log"
-#
+
+    - name: Get InstallLocation Registry Value
+      shell: powershell
+      id: registryzfs
+      run: |
+        $value = (Get-ItemProperty -Path "HKLM:\Software\OpenZFS\OpenZFS On Windows")."InstallLocation"
+        echo "zfspath=$value" | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append
+        Write-Host "Found installation location $value"
+
 #    - name: debug - list
 #      run: ls "C:\Program Files"
 #
 #    - name: debug - list
-#      run: ls "C:\Program Files\OpenZFS On Windows"
+#      run: ls "${{ steps.registryzfs.outputs.zfspath }}"
 
     - name: debug - get status
-      run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" status'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" status'
 
 
 
@@ -338,81 +346,81 @@ jobs:
 
     - name: tests/functional/cli_root/zpool_create/zpool_create_001_pos
       timeout-minutes: 1
-      run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" create -f test01 \\?\${{github.workspace}}\test01.dat'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" create -f test01 \\?\${{github.workspace}}\test01.dat'
     - run: Start-Sleep -Seconds 10
       timeout-minutes: 1
 
-    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" status'
-      timeout-minutes: 1
-    - run: Start-Sleep -Seconds 10
-      timeout-minutes: 1
-
-    - run: '& "C:\Program Files\OpenZFS On Windows\zfs.exe" mount'
+    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" status'
       timeout-minutes: 1
     - run: Start-Sleep -Seconds 10
       timeout-minutes: 1
 
-    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" destroy -f test01'
+    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zfs.exe" mount'
       timeout-minutes: 1
     - run: Start-Sleep -Seconds 10
       timeout-minutes: 1
 
-    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" create -f test02 \\?\${{github.workspace}}\test01.dat \\?\${{github.workspace}}\test02.dat'
+    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" destroy -f test01'
       timeout-minutes: 1
     - run: Start-Sleep -Seconds 10
       timeout-minutes: 1
 
-    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" destroy -f test02'
+    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" create -f test02 \\?\${{github.workspace}}\test01.dat \\?\${{github.workspace}}\test02.dat'
       timeout-minutes: 1
     - run: Start-Sleep -Seconds 10
       timeout-minutes: 1
 
-    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" create -f test03 \\?\${{github.workspace}}\test01.dat \\?\${{github.workspace}}\test02.dat \\?\${{github.workspace}}\test03.dat'
+    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" destroy -f test02'
       timeout-minutes: 1
     - run: Start-Sleep -Seconds 10
       timeout-minutes: 1
 
-    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" destroy -f test03'
+    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" create -f test03 \\?\${{github.workspace}}\test01.dat \\?\${{github.workspace}}\test02.dat \\?\${{github.workspace}}\test03.dat'
       timeout-minutes: 1
     - run: Start-Sleep -Seconds 10
       timeout-minutes: 1
 
-    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" create -f test04 mirror \\?\${{github.workspace}}\test01.dat \\?\${{github.workspace}}\test02.dat'
+    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" destroy -f test03'
       timeout-minutes: 1
     - run: Start-Sleep -Seconds 10
       timeout-minutes: 1
 
-    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" destroy -f test04'
+    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" create -f test04 mirror \\?\${{github.workspace}}\test01.dat \\?\${{github.workspace}}\test02.dat'
       timeout-minutes: 1
     - run: Start-Sleep -Seconds 10
       timeout-minutes: 1
 
-    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" create -f test05 mirror \\?\${{github.workspace}}\test01.dat \\?\${{github.workspace}}\test02.dat \\?\${{github.workspace}}\test03.dat'
+    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" destroy -f test04'
       timeout-minutes: 1
     - run: Start-Sleep -Seconds 10
       timeout-minutes: 1
 
-    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" destroy -f test05'
+    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" create -f test05 mirror \\?\${{github.workspace}}\test01.dat \\?\${{github.workspace}}\test02.dat \\?\${{github.workspace}}\test03.dat'
       timeout-minutes: 1
     - run: Start-Sleep -Seconds 10
       timeout-minutes: 1
 
-    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" create -f test06 raidz \\?\${{github.workspace}}\test01.dat \\?\${{github.workspace}}\test02.dat \\?\${{github.workspace}}\test03.dat'
+    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" destroy -f test05'
       timeout-minutes: 1
     - run: Start-Sleep -Seconds 10
       timeout-minutes: 1
 
-    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" destroy -f test06'
+    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" create -f test06 raidz \\?\${{github.workspace}}\test01.dat \\?\${{github.workspace}}\test02.dat \\?\${{github.workspace}}\test03.dat'
       timeout-minutes: 1
     - run: Start-Sleep -Seconds 10
       timeout-minutes: 1
 
-    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" create -f test07 raidz1 \\?\${{github.workspace}}\test01.dat \\?\${{github.workspace}}\test02.dat \\?\${{github.workspace}}\test03.dat'
+    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" destroy -f test06'
       timeout-minutes: 1
     - run: Start-Sleep -Seconds 10
       timeout-minutes: 1
 
-    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" destroy -f test07'
+    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" create -f test07 raidz1 \\?\${{github.workspace}}\test01.dat \\?\${{github.workspace}}\test02.dat \\?\${{github.workspace}}\test03.dat'
+      timeout-minutes: 1
+    - run: Start-Sleep -Seconds 10
+      timeout-minutes: 1
+
+    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" destroy -f test07'
       timeout-minutes: 1
     - run: Start-Sleep -Seconds 10
       timeout-minutes: 1
@@ -421,7 +429,7 @@ jobs:
 
 
     - name: uninstall zfs
-      run: 'Start-Process -FilePath "C:\Program Files\OpenZFS On Windows\unins000.exe" -Wait -ArgumentList "/NORESTART /VERYSILENT /LOG=`"${{github.workspace}}\InnoSetup-Uninstall.log`""'
+      run: 'Start-Process -FilePath "${{ steps.registryzfs.outputs.zfspath }}\unins000.exe" -Wait -ArgumentList "/NORESTART /VERYSILENT /LOG=`"${{github.workspace}}\InnoSetup-Uninstall.log`""'
 
     - name: debug - print log
       run: cat "${{github.workspace}}\InnoSetup-Uninstall.log"
@@ -562,19 +570,27 @@ jobs:
     #  run: Start-Sleep -Seconds 30
     #  uses: iFaxity/wait-on-action@v1
     #  with:
-    #    resource: 'C:\Program Files\OpenZFS On Windows\zpool.exe'
+    #    resource: '${{ steps.registryzfs.outputs.zfspath }}\zpool.exe'
 
 #    - name: debug - print log
 #      run: cat "${{github.workspace}}\InnoSetup-Install.log"
-#
+
+    - name: Get InstallLocation Registry Value
+      shell: powershell
+      id: registryzfs
+      run: |
+        $value = (Get-ItemProperty -Path "HKLM:\Software\OpenZFS\OpenZFS On Windows")."InstallLocation"
+        echo "zfspath=$value" | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append
+        Write-Host "Found installation location $value"
+
 #    - name: debug - list
 #      run: ls "C:\Program Files"
 #
 #    - name: debug - list
-#      run: ls "C:\Program Files\OpenZFS On Windows"
+#      run: ls "${{ steps.registryzfs.outputs.zfspath }}"
 
     - name: debug - get status
-      run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" status'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" status'
 
 
 
@@ -589,17 +605,17 @@ jobs:
           $f.Close()
 
     - name: create pool
-      run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" create tank \\?\${{github.workspace}}\test01.dat'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" create tank \\?\${{github.workspace}}\test01.dat'
 
     - name: get pool status
-      run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" status'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" status'
 
     - name: get pool mount
-      run: '& "C:\Program Files\OpenZFS On Windows\zfs.exe" mount'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zfs.exe" mount'
 
     - name: get pool mount
       id: drive  # Remember to give an ID if you need the output filename
-      run: '& "C:\Program Files\OpenZFS On Windows\zfs.exe"  mount | Select-String -Pattern "^tank +([A-Za-z]):[/\\]"  | % {"drive=$($_.matches.groups[1].value):\"} | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zfs.exe"  mount | Select-String -Pattern "^tank +([A-Za-z]):[/\\]"  | % {"drive=$($_.matches.groups[1].value):\"} | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append'
 
 
     - name: echo
@@ -841,7 +857,7 @@ jobs:
     #- name: run export zpool
     #  if: ${{ always() }}
     #  timeout-minutes: 1
-    #  run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" export tank'
+    #  run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" export tank'
 
 
 
@@ -963,19 +979,27 @@ jobs:
 #    #  run: Start-Sleep -Seconds 30
 #    #  uses: iFaxity/wait-on-action@v1
 #    #  with:
-#    #    resource: 'C:\Program Files\OpenZFS On Windows\zpool.exe'
+#    #    resource: '${{ steps.registryzfs.outputs.zfspath }}\zpool.exe'
 #
 ##    - name: debug - print log
 ##      run: cat "${{github.workspace}}\InnoSetup-Install.log"
+##
+##    - name: Get InstallLocation Registry Value
+##      shell: powershell
+##      id: registryzfs
+##      run: |
+##        $value = (Get-ItemProperty -Path "HKLM:\Software\OpenZFS\OpenZFS On Windows")."InstallLocation"
+##        echo "zfspath=$value" | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append
+##        Write-Host "Found installation location $value"
 ##
 ##    - name: debug - list
 ##      run: ls "C:\Program Files"
 ##
 ##    - name: debug - list
-##      run: ls "C:\Program Files\OpenZFS On Windows"
+##      run: ls "${{ steps.registryzfs.outputs.zfspath }}"
 #
 #    - name: debug - get status
-#      run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" status'
+#      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" status'
 #
 #
 #
@@ -998,49 +1022,49 @@ jobs:
 ##    - run: choco install gsudo
 #
 #    - name: tests/functional/cli_root/zpool_create/zpool_create_001_pos
-#      run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" create -f test01 \\?\${{github.workspace}}\test01.dat'
+#      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" create -f test01 \\?\${{github.workspace}}\test01.dat'
 #    - run: Start-Sleep -Seconds 10
 #
-#    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" status'
+#    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" status'
 #    - run: Start-Sleep -Seconds 10
 #
-#    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" destroy -f test01'
+#    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" destroy -f test01'
 #    - run: Start-Sleep -Seconds 10
 #
-#    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" create -f test02 \\?\${{github.workspace}}\test01.dat \\?\${{github.workspace}}\test02.dat'
+#    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" create -f test02 \\?\${{github.workspace}}\test01.dat \\?\${{github.workspace}}\test02.dat'
 #    - run: Start-Sleep -Seconds 10
 #
-#    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" destroy -f test02'
+#    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" destroy -f test02'
 #    - run: Start-Sleep -Seconds 10
 #
-#    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" create -f test03 \\?\${{github.workspace}}\test01.dat \\?\${{github.workspace}}\test02.dat \\?\${{github.workspace}}\test03.dat'
+#    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" create -f test03 \\?\${{github.workspace}}\test01.dat \\?\${{github.workspace}}\test02.dat \\?\${{github.workspace}}\test03.dat'
 #    - run: Start-Sleep -Seconds 10
 #
-#    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" destroy -f test03'
+#    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" destroy -f test03'
 #    - run: Start-Sleep -Seconds 10
 #
-#    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" create -f test04 mirror \\?\${{github.workspace}}\test01.dat \\?\${{github.workspace}}\test02.dat'
+#    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" create -f test04 mirror \\?\${{github.workspace}}\test01.dat \\?\${{github.workspace}}\test02.dat'
 #    - run: Start-Sleep -Seconds 10
 #
-#    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" destroy -f test04'
+#    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" destroy -f test04'
 #    - run: Start-Sleep -Seconds 10
 #
-#    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" create -f test05 mirror \\?\${{github.workspace}}\test01.dat \\?\${{github.workspace}}\test02.dat \\?\${{github.workspace}}\test03.dat'
+#    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" create -f test05 mirror \\?\${{github.workspace}}\test01.dat \\?\${{github.workspace}}\test02.dat \\?\${{github.workspace}}\test03.dat'
 #    - run: Start-Sleep -Seconds 10
 #
-#    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" destroy -f test05'
+#    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" destroy -f test05'
 #    - run: Start-Sleep -Seconds 10
 #
-#    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" create -f test06 raidz \\?\${{github.workspace}}\test01.dat \\?\${{github.workspace}}\test02.dat \\?\${{github.workspace}}\test03.dat'
+#    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" create -f test06 raidz \\?\${{github.workspace}}\test01.dat \\?\${{github.workspace}}\test02.dat \\?\${{github.workspace}}\test03.dat'
 #    - run: Start-Sleep -Seconds 10
 #
-#    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" destroy -f test06'
+#    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" destroy -f test06'
 #    - run: Start-Sleep -Seconds 10
 #
-#    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" create -f test07 raidz1 \\?\${{github.workspace}}\test01.dat \\?\${{github.workspace}}\test02.dat \\?\${{github.workspace}}\test03.dat'
+#    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" create -f test07 raidz1 \\?\${{github.workspace}}\test01.dat \\?\${{github.workspace}}\test02.dat \\?\${{github.workspace}}\test03.dat'
 #    - run: Start-Sleep -Seconds 10
 #
-#    - run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" destroy -f test07'
+#    - run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" destroy -f test07'
 #    - run: Start-Sleep -Seconds 10
 #
 #
@@ -1213,23 +1237,23 @@ jobs:
 ##        $f.Close()
 ##
 ##    - name: create pool
-##      run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" create tank \\?\${{github.workspace}}\test.dat'
+##      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" create tank \\?\${{github.workspace}}\test.dat'
 ##
 ##    - name: get pool status
-##      run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" status'
+##      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" status'
 ##
 ##    - name: get pool mount
-##      run: '& "C:\Program Files\OpenZFS On Windows\zfs.exe" mount'
+##      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zfs.exe" mount'
 ##
 ##    - name: get pool mount
 ##      id: drive  # Remember to give an ID if you need the output filename
-##      run: '& "C:\Program Files\OpenZFS On Windows\zfs.exe"  mount | Select-String -Pattern "^tank +([A-Za-z]:\\)"  | % {"::set-output name=drive::$($_.matches.groups[1].value)"}'
+##      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zfs.exe"  mount | Select-String -Pattern "^tank +([A-Za-z]:\\)"  | % {"::set-output name=drive::$($_.matches.groups[1].value)"}'
 ##
 ##    - name: echo
 ##      run: echo ${{ steps.drive.outputs.drive }}
 ##
 ##    - name: get
-##      run: '& "C:\Program Files\OpenZFS On Windows\zfs.exe" get all'
+##      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zfs.exe" get all'
 ##
 ##    - name: get bcd
 ##      run: 'bcdedit'
@@ -1372,7 +1396,7 @@ jobs:
 ##    #- name: run export zpool
 ##    #  if: ${{ always() }}
 ##    #  timeout-minutes: 1
-##    #  run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" export tank'
+##    #  run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" export tank'
 ##
 ##
 ##
@@ -1535,19 +1559,27 @@ jobs:
     #  run: Start-Sleep -Seconds 30
     #  uses: iFaxity/wait-on-action@v1
     #  with:
-    #    resource: 'C:\Program Files\OpenZFS On Windows\zpool.exe'
+    #    resource: '${{ steps.registryzfs.outputs.zfspath }}\zpool.exe'
 
 #    - name: debug - print log
 #      run: cat "${{github.workspace}}\InnoSetup-Install.log"
-#
+
+    - name: Get InstallLocation Registry Value
+      shell: powershell
+      id: registryzfs
+      run: |
+        $value = (Get-ItemProperty -Path "HKLM:\Software\OpenZFS\OpenZFS On Windows")."InstallLocation"
+        echo "zfspath=$value" | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append
+        Write-Host "Found installation location $value"
+
 #    - name: debug - list
 #      run: ls "C:\Program Files"
 #
 #    - name: debug - list
-#      run: ls "C:\Program Files\OpenZFS On Windows"
+#      run: ls "${{ steps.registryzfs.outputs.zfspath }}"
 
     - name: debug - get status
-      run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" status'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" status'
 
 
 
@@ -1562,21 +1594,21 @@ jobs:
           $f.Close()
 
     - name: create pool
-      run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" create tank \\?\${{github.workspace}}\test01.dat'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" create tank \\?\${{github.workspace}}\test01.dat'
 
     - name: get pool status
-      run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" status'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" status'
 
     - name: get pool mount
-      run: '& "C:\Program Files\OpenZFS On Windows\zfs.exe" mount'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zfs.exe" mount'
 
     - name: get pool mount
       id: drive  # Remember to give an ID if you need the output filename
-      run: '& "C:\Program Files\OpenZFS On Windows\zfs.exe"  mount | Select-String -Pattern "^tank +([A-Za-z]):[/\\]"  | % {"drive=$($_.matches.groups[1].value):\"} | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zfs.exe"  mount | Select-String -Pattern "^tank +([A-Za-z]):[/\\]"  | % {"drive=$($_.matches.groups[1].value):\"} | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append'
 
     - name: get pool mount
       id: drivenoslash  # Remember to give an ID if you need the output filename
-      run: '& "C:\Program Files\OpenZFS On Windows\zfs.exe"  mount | Select-String -Pattern "^tank +([A-Za-z]):[/\\]"  | % {"drive=$($_.matches.groups[1].value):"} | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zfs.exe"  mount | Select-String -Pattern "^tank +([A-Za-z]):[/\\]"  | % {"drive=$($_.matches.groups[1].value):"} | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append'
 
     - name: echo
       run: echo ${{ steps.drive.outputs.drive }}
@@ -1865,19 +1897,27 @@ jobs:
     #  run: Start-Sleep -Seconds 30
     #  uses: iFaxity/wait-on-action@v1
     #  with:
-    #    resource: 'C:\Program Files\OpenZFS On Windows\zpool.exe'
+    #    resource: '${{ steps.registryzfs.outputs.zfspath }}\zpool.exe'
 
 #    - name: debug - print log
 #      run: cat "${{github.workspace}}\InnoSetup-Install.log"
-#
+
+    - name: Get InstallLocation Registry Value
+      shell: powershell
+      id: registryzfs
+      run: |
+        $value = (Get-ItemProperty -Path "HKLM:\Software\OpenZFS\OpenZFS On Windows")."InstallLocation"
+        echo "zfspath=$value" | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append
+        Write-Host "Found installation location $value"
+
 #    - name: debug - list
 #      run: ls "C:\Program Files"
 #
 #    - name: debug - list
-#      run: ls "C:\Program Files\OpenZFS On Windows"
+#      run: ls "${{ steps.registryzfs.outputs.zfspath }}"
 
     - name: debug - get status
-      run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" status'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" status'
 
 
 
@@ -1892,17 +1932,17 @@ jobs:
           $f.Close()
 
     - name: create pool
-      run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" create tank \\?\${{github.workspace}}\test01.dat'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" create tank \\?\${{github.workspace}}\test01.dat'
 
     - name: get pool status
-      run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" status'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" status'
 
     - name: get pool mount
-      run: '& "C:\Program Files\OpenZFS On Windows\zfs.exe" mount'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zfs.exe" mount'
 
     - name: get pool mount
       id: drive  # Remember to give an ID if you need the output filename
-      run: '& "C:\Program Files\OpenZFS On Windows\zfs.exe"  mount | Select-String -Pattern "^tank +([A-Za-z]):[/\\]"  | % {"drive=$($_.matches.groups[1].value):\"} | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zfs.exe"  mount | Select-String -Pattern "^tank +([A-Za-z]):[/\\]"  | % {"drive=$($_.matches.groups[1].value):\"} | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append'
 
     - name: echo
       run: echo ${{ steps.drive.outputs.drive }}
@@ -2121,19 +2161,27 @@ jobs:
     #  run: Start-Sleep -Seconds 30
     #  uses: iFaxity/wait-on-action@v1
     #  with:
-    #    resource: 'C:\Program Files\OpenZFS On Windows\zpool.exe'
+    #    resource: '${{ steps.registryzfs.outputs.zfspath }}\zpool.exe'
 
 #    - name: debug - print log
 #      run: cat "${{github.workspace}}\InnoSetup-Install.log"
-#
+
+    - name: Get InstallLocation Registry Value
+      shell: powershell
+      id: registryzfs
+      run: |
+        $value = (Get-ItemProperty -Path "HKLM:\Software\OpenZFS\OpenZFS On Windows")."InstallLocation"
+        echo "zfspath=$value" | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append
+        Write-Host "Found installation location $value"
+
 #    - name: debug - list
 #      run: ls "C:\Program Files"
 #
 #    - name: debug - list
-#      run: ls "C:\Program Files\OpenZFS On Windows"
+#      run: ls "${{ steps.registryzfs.outputs.zfspath }}"
 
     - name: debug - get status
-      run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" status'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" status'
 
 
 
@@ -2270,19 +2318,27 @@ jobs:
     #  run: Start-Sleep -Seconds 30
     #  uses: iFaxity/wait-on-action@v1
     #  with:
-    #    resource: 'C:\Program Files\OpenZFS On Windows\zpool.exe'
+    #    resource: '${{ steps.registryzfs.outputs.zfspath }}\zpool.exe'
 
 #    - name: debug - print log
 #      run: cat "${{github.workspace}}\InnoSetup-Install.log"
-#
+
+    - name: Get InstallLocation Registry Value
+      shell: powershell
+      id: registryzfs
+      run: |
+        $value = (Get-ItemProperty -Path "HKLM:\Software\OpenZFS\OpenZFS On Windows")."InstallLocation"
+        echo "zfspath=$value" | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append
+        Write-Host "Found installation location $value"
+
 #    - name: debug - list
 #      run: ls "C:\Program Files"
 #
 #    - name: debug - list
-#      run: ls "C:\Program Files\OpenZFS On Windows"
+#      run: ls "${{ steps.registryzfs.outputs.zfspath }}"
 
     - name: debug - get status
-      run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" status'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" status'
 
 
 
@@ -2431,19 +2487,27 @@ jobs:
     #  run: Start-Sleep -Seconds 30
     #  uses: iFaxity/wait-on-action@v1
     #  with:
-    #    resource: 'C:\Program Files\OpenZFS On Windows\zpool.exe'
+    #    resource: '${{ steps.registryzfs.outputs.zfspath }}\zpool.exe'
 
 #    - name: debug - print log
 #      run: cat "${{github.workspace}}\InnoSetup-Install.log"
-#
+
+    - name: Get InstallLocation Registry Value
+      shell: powershell
+      id: registryzfs
+      run: |
+        $value = (Get-ItemProperty -Path "HKLM:\Software\OpenZFS\OpenZFS On Windows")."InstallLocation"
+        echo "zfspath=$value" | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append
+        Write-Host "Found installation location $value"
+
 #    - name: debug - list
 #      run: ls "C:\Program Files"
 #
 #    - name: debug - list
-#      run: ls "C:\Program Files\OpenZFS On Windows"
+#      run: ls "${{ steps.registryzfs.outputs.zfspath }}"
 
     - name: debug - get status
-      run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" status'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" status'
 
 
 
@@ -2458,21 +2522,21 @@ jobs:
           $f.Close()
 
     - name: create pool
-      run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" create tank \\?\${{github.workspace}}\test01.dat'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" create tank \\?\${{github.workspace}}\test01.dat'
 
     - name: get pool status
-      run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" status'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" status'
 
     - name: get pool mount
-      run: '& "C:\Program Files\OpenZFS On Windows\zfs.exe" mount'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zfs.exe" mount'
 
     - name: get pool mount
       id: drive  # Remember to give an ID if you need the output filename
-      run: '& "C:\Program Files\OpenZFS On Windows\zfs.exe"  mount | Select-String -Pattern "^tank +([A-Za-z]):[/\\]"  | % {"drive=$($_.matches.groups[1].value):\"} | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zfs.exe"  mount | Select-String -Pattern "^tank +([A-Za-z]):[/\\]"  | % {"drive=$($_.matches.groups[1].value):\"} | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append'
 
     - name: get pool mount
       id: drivenoslash  # Remember to give an ID if you need the output filename
-      run: '& "C:\Program Files\OpenZFS On Windows\zfs.exe"  mount | Select-String -Pattern "^tank +([A-Za-z]):[/\\]"  | % {"drive=$($_.matches.groups[1].value):"} | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zfs.exe"  mount | Select-String -Pattern "^tank +([A-Za-z]):[/\\]"  | % {"drive=$($_.matches.groups[1].value):"} | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append'
 
     - name: echo
       run: echo ${{ steps.drive.outputs.drive }}
@@ -2661,19 +2725,27 @@ jobs:
     #  run: Start-Sleep -Seconds 30
     #  uses: iFaxity/wait-on-action@v1
     #  with:
-    #    resource: 'C:\Program Files\OpenZFS On Windows\zpool.exe'
+    #    resource: '${{ steps.registryzfs.outputs.zfspath }}\zpool.exe'
 
 #    - name: debug - print log
 #      run: cat "${{github.workspace}}\InnoSetup-Install.log"
-#
+
+    - name: Get InstallLocation Registry Value
+      shell: powershell
+      id: registryzfs
+      run: |
+        $value = (Get-ItemProperty -Path "HKLM:\Software\OpenZFS\OpenZFS On Windows")."InstallLocation"
+        echo "zfspath=$value" | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append
+        Write-Host "Found installation location $value"
+
 #    - name: debug - list
 #      run: ls "C:\Program Files"
 #
 #    - name: debug - list
-#      run: ls "C:\Program Files\OpenZFS On Windows"
+#      run: ls "${{ steps.registryzfs.outputs.zfspath }}"
 
     - name: debug - get status
-      run: '& "C:\Program Files\OpenZFS On Windows\zpool.exe" status'
+      run: '& "${{ steps.registryzfs.outputs.zfspath }}\zpool.exe" status'
 
 
 
@@ -2763,5 +2835,13 @@ jobs:
     - name: install zfs
       run: 'Start-Process -FilePath "${{github.workspace}}\${{ steps.zfsinstaller.outputs.filename }}" -Wait -ArgumentList "/NORESTART /ALLUSERS /VERYSILENT /LOG=`"${{github.workspace}}\InnoSetup-Install.log`""'
 
+    - name: Get InstallLocation Registry Value
+      shell: powershell
+      id: registryzfs
+      run: |
+        $value = (Get-ItemProperty -Path "HKLM:\Software\OpenZFS\OpenZFS On Windows")."InstallLocation"
+        echo "zfspath=$value" | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append
+        Write-Host "Found installation location $value"
+
     - name: test
-      run: 'python.exe -u "${{github.workspace}}\contrib\windows\tests\regression.py" --path ${{github.workspace}}\'
+      run: 'python.exe -u "${{github.workspace}}\contrib\windows\tests\regression.py" --path "${{github.workspace}}\"" --zfspath "${{ steps.registryzfs.outputs.zfspath }}"'
