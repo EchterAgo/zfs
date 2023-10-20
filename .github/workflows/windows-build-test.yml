@@ -79,14 +79,12 @@ jobs:
     - name: debug - get git rev
       run: git describe --always --long --dirty
 
-    - name: Install winget
-      uses: Cyberboss/install-winget@v1
-
-    - name: Install Inno Setup
-      run: winget install -e --id JRSoftware.InnoSetup
+    # InnoSetup is part of the Github actions runner
+    # - name: Install InnoSetup
+    #   run: choco install -y InnoSetup
 
     - name: run ISCC.exe to construct OpenZFS installer
-      run: '&"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" .\ZFSInstall-debug.iss "/Ssigntoolc=C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe sign /v /fd sha256 /n `$qOpenZFS Test Signing Certificate`$q /t http://timestamp.digicert.com `$f" | Tee-Object -FilePath "${{github.workspace}}\iscc.log"'
+      run: '&"${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" .\ZFSInstall-debug.iss "/Ssigntoolc=${env:ProgramFiles(x86)}\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe sign /v /fd sha256 /n `$qOpenZFS Test Signing Certificate`$q /t http://timestamp.digicert.com `$f" | Tee-Object -FilePath "${{github.workspace}}\iscc.log"'
       working-directory: ${{github.workspace}}\contrib\windows\Inno.Setup
 
     #- name: debug - get exe name
