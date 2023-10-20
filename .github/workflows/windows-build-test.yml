@@ -165,7 +165,7 @@ jobs:
 
     - name: debug - print log
       run: cat "${{github.workspace}}\InnoSetup-Install.log"
-      if: ${{ env.ACTIONS_RUNNER_DEBUG == 'true' }}
+      if: ${{ secrets.ACTIONS_STEP_DEBUG == 'true' }}
 
     - name: Check InstallLocation Registry Value
       run: |
