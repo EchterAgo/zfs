@@ -2835,4 +2835,4 @@ jobs:
         Write-Host "Found installation location $value"
 
     - name: test
-      run: 'python.exe -u "${{github.workspace}}\contrib\windows\tests\regression.py" --path "${{github.workspace}}\"" --zfspath "${{ steps.registryzfs.outputs.zfspath }}"'
+      run: 'python.exe -u "${{github.workspace}}\contrib\windows\tests\regression.py" --path "${{github.workspace}}" --zfspath "${{ steps.registryzfs.outputs.zfspath }}"'
