@@ -28,6 +28,7 @@ NO_WEAK_MODULES="yes"
 PRE_BUILD="configure
   --disable-dependency-tracking
   --prefix=/usr
+  --enable-linux-experimental
   --with-config=kernel
   --with-linux=\$(
     if [ -e "\${kernel_source_dir/%build/source}" ]
