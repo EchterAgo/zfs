@@ -58,6 +58,7 @@ This package contains the dkms ZFS kernel modules.
 %setup -q -n %{module}-%{version}
 
 %build
+ZFS_DKMS_LINUX_EXPERIMENTAL='@ZFS_DKMS_LINUX_EXPERIMENTAL@' \
 %{mkconf} -n %{module} -v %{version} -f dkms.conf
 
 %install

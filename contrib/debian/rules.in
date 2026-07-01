@@ -131,6 +131,7 @@ override_dh_python3:
 	dh_python3 -p openzfs-python3-pyzfs
 
 override_dh_dkms:
+	ZFS_DKMS_LINUX_EXPERIMENTAL='@ZFS_DKMS_LINUX_EXPERIMENTAL@' \
 	'$(CURDIR)/scripts/dkms.mkconf' -n $(NAME) -v $(DKMS_VERSION) -f '$(CURDIR)/scripts/zfs-dkms.dkms'
 	dh_dkms
 	rm -f '$(CURDIR)/scripts/zfs-dkms.dkms'
