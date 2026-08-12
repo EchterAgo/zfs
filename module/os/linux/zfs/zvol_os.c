@@ -1142,9 +1142,46 @@ typedef struct zvol_queue_limits {
 	unsigned int	zql_max_segment_size;
 	unsigned int	zql_io_opt;
 	unsigned int	zql_physical_block_size;
+	unsigned int	zql_logical_block_size;
 	unsigned int	zql_max_discard_sectors;
 	unsigned int	zql_discard_granularity;
 } zvol_queue_limits_t;
+
+/*
+ * User property name for overriding the logical block size.
+ * Values:
+ *   "physical"  - use volblocksize (same as physical block size)
+ *   <number>    - use the specified block size in bytes
+ *   (unset)     - default to 512 bytes
+ */
+#define ZVOL_LOGICAL_BLOCKSIZE_PROP "net.loping:vollogicalblocksize"
+#define ZVOL_LOGICAL_BLOCKSIZE_DEFAULT 512
+
+static unsigned int
+zvol_get_logical_blocksize(const char *name, uint64_t volblocksize)
+{
+	char buf[128];
+	int err;
+
+	err = dsl_prop_get(name, ZVOL_LOGICAL_BLOCKSIZE_PROP,
+	    1, sizeof (buf), buf, NULL);
+	if (err != 0)
+		return (ZVOL_LOGICAL_BLOCKSIZE_DEFAULT);
+
+	buf[sizeof(buf) - 1] = '\0';
+
+	if (strcmp(buf, "physical") == 0)
+		return ((unsigned int)volblocksize);
+
+	/* Try to parse as a numeric value. */
+	unsigned long val;
+	err = kstrtoul(buf, 10, &val);
+	if (err == 0 && val > 0)
+		return ((unsigned int)val);
+
+	/* Invalid value, fall back to default. */
+	return (ZVOL_LOGICAL_BLOCKSIZE_DEFAULT);
+}
 
 static void
 zvol_queue_limits_init(zvol_queue_limits_t *limits, zvol_state_t *zv,
@@ -1212,6 +1249,8 @@ zvol_queue_limits_init(zvol_queue_limits_t *limits, zvol_state_t *zv,
 	limits->zql_io_opt = DMU_MAX_ACCESS / 2;
 
 	limits->zql_physical_block_size = zv->zv_volblocksize;
+	limits->zql_logical_block_size = zvol_get_logical_blocksize(
+	    zv->zv_name, zv->zv_volblocksize);
 	limits->zql_max_discard_sectors =
 	    (zvol_max_discard_blocks * zv->zv_volblocksize) >> 9;
 	limits->zql_discard_granularity = zv->zv_volblocksize;
@@ -1228,6 +1267,7 @@ zvol_queue_limits_convert(zvol_queue_limits_t *limits,
 	qlimits->max_segment_size = limits->zql_max_segment_size;
 	qlimits->io_opt = limits->zql_io_opt;
 	qlimits->physical_block_size = limits->zql_physical_block_size;
+	qlimits->logical_block_size = limits->zql_logical_block_size;
 	qlimits->max_discard_sectors = limits->zql_max_discard_sectors;
 	qlimits->max_hw_discard_sectors = limits->zql_max_discard_sectors;
 	qlimits->discard_granularity = limits->zql_discard_granularity;
@@ -1248,6 +1288,7 @@ zvol_queue_limits_apply(zvol_queue_limits_t *limits,
 	blk_queue_max_segment_size(queue, limits->zql_max_segment_size);
 	blk_queue_io_opt(queue, limits->zql_io_opt);
 	blk_queue_physical_block_size(queue, limits->zql_physical_block_size);
+	blk_queue_logical_block_size(queue, limits->zql_logical_block_size);
 	blk_queue_max_discard_sectors(queue, limits->zql_max_discard_sectors);
 	blk_queue_discard_granularity(queue, limits->zql_discard_granularity);
 #endif
@@ -1396,6 +1437,7 @@ zvol_alloc(dev_t dev, const char *name, uint64_t volsize, uint64_t volblocksize,
 	zv->zv_volmode = volmode;
 	zv->zv_volsize = volsize;
 	zv->zv_volblocksize = volblocksize;
+	strlcpy(zv->zv_name, name, sizeof (zv->zv_name));
 
 	list_link_init(&zv->zv_next);
 	mutex_init(&zv->zv_state_lock, NULL, MUTEX_DEFAULT, NULL);
@@ -1444,7 +1486,6 @@ zvol_alloc(dev_t dev, const char *name, uint64_t volsize, uint64_t volblocksize,
 	zso->zvo_queue->queuedata = zv;
 	zso->zvo_dev = dev;
 	zv->zv_open_count = 0;
-	strlcpy(zv->zv_name, name, sizeof (zv->zv_name));
 
 	zfs_rangelock_init(&zv->zv_rangelock, NULL, NULL);
 	rw_init(&zv->zv_suspend_lock, NULL, RW_DEFAULT, NULL);
