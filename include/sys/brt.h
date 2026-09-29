@@ -51,6 +51,7 @@ extern void brt_fini(void);
 extern void brt_pending_add(spa_t *spa, const blkptr_t *bp, dmu_tx_t *tx);
 extern void brt_pending_remove(spa_t *spa, const blkptr_t *bp, dmu_tx_t *tx);
 extern void brt_pending_apply(spa_t *spa, uint64_t txg);
+extern boolean_t brt_pending_exists(spa_t *spa, const blkptr_t *bp);
 
 extern void brt_create(spa_t *spa);
 extern int brt_load(spa_t *spa);

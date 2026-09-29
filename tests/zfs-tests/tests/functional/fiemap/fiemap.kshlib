@@ -1,0 +1,134 @@
+#!/bin/ksh -p
+# SPDX-License-Identifier: CDDL-1.0
+#
+# This file and its contents are supplied under the terms of the
+# Common Development and Distribution License ("CDDL"), version 1.0.
+# You may only use this file in accordance with the terms of version
+# 1.0 of the CDDL.
+#
+# A full copy of the text of the CDDL should have accompanied this
+# source.  A copy of the CDDL is also available via the Internet at
+# https://opensource.org/license/CDDL-1.0.
+#
+
+#
+# Copyright (c) 2026 by the OpenZFS project.  All rights reserved.
+#
+
+. $STF_SUITE/include/libtest.shlib
+
+#
+# The fiemap command prints one line per extent,
+#	ext <logical> <physical> <length> <flags_hex> [flag names]
+# then "mapped <count>", or "error <errno> <strerror>" on failure.
+#
+
+# Number of extents returned.
+function fiemap_nr_extents
+{
+	fiemap "$@" | grep -c '^ext '
+}
+
+# The count on the "mapped" line.
+function fiemap_mapped
+{
+	fiemap "$@" | awk '/^mapped /{print $2}'
+}
+
+# errno of a failed call, empty on success.
+function fiemap_errno
+{
+	fiemap "$@" | awk '/^error /{print $2}'
+}
+
+# True if any extent carries the named flag.
+function fiemap_has_flag
+{
+	typeset flag=$1
+	shift
+	fiemap "$@" | grep '^ext ' | grep -qw "$flag"
+}
+
+# True if there are extents and every one carries the named flag.
+function fiemap_all_flag
+{
+	typeset flag=$1
+	shift
+	fiemap "$@" | awk -v flag="$flag" '
+	    /^ext / {
+		n++
+		for (i = 6; i <= NF; i++)
+			if ($i == flag)
+				have++
+	    }
+	    END { exit !(n > 0 && n == have) }'
+}
+
+# True if the last extent returned carries LAST.
+function fiemap_ends_last
+{
+	fiemap "$@" | awk '
+	    /^ext / {
+		last = 0
+		for (i = 6; i <= NF; i++)
+			if ($i == "last")
+				last = 1
+	    }
+	    END { exit !last }'
+}
+
+# True if each extent carries NOT_ALIGNED exactly when its physical
+# offset or length is not a multiple of the block size given first,
+# the rule fiemap-tester applies.  An inline extent always carries
+# it, as the FIEMAP documentation requires.  The offset is reduced a
+# digit at a time, since with vdev bits it is too large for awk to
+# hold exactly.
+function fiemap_check_aligned
+{
+	typeset bs=$1
+	shift
+	fiemap "$@" | awk -v bs="$bs" '
+	    function mod(s, m,    r, i) {
+		r = 0
+		for (i = 1; i <= length(s); i++)
+			r = (r * 10 + substr(s, i, 1)) % m
+		return r
+	    }
+	    /^ext / {
+		na = 0
+		inline = 0
+		for (i = 6; i <= NF; i++) {
+			if ($i == "not_aligned")
+				na = 1
+			if ($i == "inline")
+				inline = 1
+		}
+		if (inline) {
+			if (!na)
+				bad = 1
+		} else {
+			un = (mod($3, bs) != 0 || mod($4, bs) != 0)
+			if (na != un)
+				bad = 1
+		}
+	    }
+	    END { exit bad }'
+}
+
+# Logical offsets of the extents, in order.
+function fiemap_logical
+{
+	echo $(fiemap "$@" | awk '/^ext /{print $2}')
+}
+
+# Physical offsets of the extents, in order.
+function fiemap_physical
+{
+	echo $(fiemap "$@" | awk '/^ext /{print $3}')
+}
+
+# Sum of the logical lengths of the extents.
+function fiemap_logical_sum
+{
+	fiemap "$@" | awk '/^ext /{s += $4} END {print s + 0}'
+}

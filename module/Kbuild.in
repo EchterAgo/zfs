@@ -462,6 +462,7 @@ ZFS_OBJS_OS := \
 	zfs_ctldir.o \
 	zfs_debug.o \
 	zfs_dir.o \
+	zfs_fiemap.o \
 	zfs_file_os.o \
 	zfs_ioctl_os.o \
 	zfs_racct.o \

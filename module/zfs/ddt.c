@@ -1910,6 +1910,27 @@ ddt_class_contains(spa_t *spa, ddt_class_t max_class, const blkptr_t *bp)
 	return (B_FALSE);
 }
 
+/*
+ * Like ddt_class_contains(), but for open context where we need
+ * protection against concurrent object destruction by sync context.
+ * Entries still in the DDT log are not seen.
+ */
+boolean_t
+ddt_class_contains_open(spa_t *spa, ddt_class_t max_class,
+    const blkptr_t *bp)
+{
+	if (!BP_GET_DEDUP(bp))
+		return (B_FALSE);
+
+	ddt_t *ddt = spa->spa_ddt[BP_GET_CHECKSUM(bp)];
+
+	rw_enter(&ddt->ddt_objects_lock, RW_READER);
+	boolean_t found = ddt_class_contains(spa, max_class, bp);
+	rw_exit(&ddt->ddt_objects_lock);
+
+	return (found);
+}
+
 ddt_entry_t *
 ddt_repair_start(ddt_t *ddt, const blkptr_t *bp)
 {

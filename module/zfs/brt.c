@@ -1260,17 +1260,53 @@ brt_pending_remove(spa_t *spa, const blkptr_t *bp, dmu_tx_t *tx)
 		kmem_cache_free(brt_entry_cache, bre);
 }
 
+/*
+ * Return B_TRUE if a clone of this block waits in a pending tree.
+ * brt_pending_apply() moves clones into the BRT in syncing context,
+ * and brt_entry_get_refcount() does not count them until it has.
+ */
+boolean_t
+brt_pending_exists(spa_t *spa, const blkptr_t *bp)
+{
+	brt_entry_t bre_search;
+	boolean_t found = B_FALSE;
+
+	if (spa->spa_brt_nvdevs == 0)
+		return (B_FALSE);
+
+	uint64_t vdevid = DVA_GET_VDEV(&bp->blk_dva[0]);
+	brt_vdev_t *brtvd = brt_vdev(spa, vdevid, B_FALSE);
+	if (brtvd == NULL)
+		return (B_FALSE);
+
+	bre_search.bre_bp = *bp;
+
+	mutex_enter(&brtvd->bv_pending_lock);
+	for (int i = 0; i < TXG_SIZE; i++) {
+		if (avl_find(&brtvd->bv_pending_tree[i], &bre_search,
+		    NULL) != NULL) {
+			found = B_TRUE;
+			break;
+		}
+	}
+	mutex_exit(&brtvd->bv_pending_lock);
+
+	return (found);
+}
+
 static void
 brt_pending_apply_vdev(spa_t *spa, brt_vdev_t *brtvd, uint64_t txg)
 {
 	brt_entry_t *bre, *nbre;
 
 	/*
-	 * We are in syncing context, so no other bv_pending_tree accesses
-	 * are possible for the TXG.  So we don't need bv_pending_lock.
+	 * brt_pending_exists() reads the pending trees of every TXG
+	 * from open context, so the swap takes bv_pending_lock.
 	 */
 	ASSERT(avl_is_empty(&brtvd->bv_tree));
+	mutex_enter(&brtvd->bv_pending_lock);
 	avl_swap(&brtvd->bv_tree, &brtvd->bv_pending_tree[txg & TXG_MASK]);
+	mutex_exit(&brtvd->bv_pending_lock);
 
 	for (bre = avl_first(&brtvd->bv_tree); bre; bre = nbre) {
 		nbre = AVL_NEXT(&brtvd->bv_tree, bre);

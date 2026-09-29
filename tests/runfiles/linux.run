@@ -149,6 +149,15 @@ tags = ['functional', 'fault']
 tests = ['large_dnode_002_pos', 'large_dnode_006_pos', 'large_dnode_008_pos']
 tags = ['functional', 'features', 'large_dnode']
 
+[tests/functional/fiemap:Linux]
+tests = ['fiemap_sanity', 'fiemap_holes', 'fiemap_holes_indirect',
+    'fiemap_shared', 'fiemap_clone_pending', 'fiemap_dedup',
+    'fiemap_compress', 'fiemap_encrypt', 'fiemap_copies',
+    'fiemap_nomerge', 'fiemap_merge', 'fiemap_count',
+    'fiemap_count_exact', 'fiemap_range', 'fiemap_errors',
+    'fiemap_stress', 'fiemap_removal', 'fiemap_concurrent']
+tags = ['functional', 'fiemap']
+
 [tests/functional/io:Linux]
 tests = ['libaio', 'io_uring']
 tags = ['functional', 'io']

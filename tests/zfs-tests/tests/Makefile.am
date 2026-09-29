@@ -281,6 +281,7 @@ nobase_dist_datadir_zfs_tests_tests_DATA += \
 	functional/events/events_common.kshlib \
 	functional/failmode/failmode.kshlib \
 	functional/fault/fault.cfg \
+	functional/fiemap/fiemap.kshlib \
 	functional/gang_blocks/gang_blocks.kshlib \
 	functional/grow/grow.cfg \
 	functional/history/history.cfg \
@@ -1641,6 +1642,26 @@ nobase_dist_datadir_zfs_tests_tests_SCRIPTS += \
 	functional/features/large_dnode/large_dnode_008_pos.ksh \
 	functional/features/large_dnode/large_dnode_009_pos.ksh \
 	functional/features/large_dnode/setup.ksh \
+	functional/fiemap/cleanup.ksh \
+	functional/fiemap/fiemap_clone_pending.ksh \
+	functional/fiemap/fiemap_compress.ksh \
+	functional/fiemap/fiemap_concurrent.ksh \
+	functional/fiemap/fiemap_copies.ksh \
+	functional/fiemap/fiemap_count.ksh \
+	functional/fiemap/fiemap_count_exact.ksh \
+	functional/fiemap/fiemap_dedup.ksh \
+	functional/fiemap/fiemap_encrypt.ksh \
+	functional/fiemap/fiemap_errors.ksh \
+	functional/fiemap/fiemap_holes.ksh \
+	functional/fiemap/fiemap_holes_indirect.ksh \
+	functional/fiemap/fiemap_merge.ksh \
+	functional/fiemap/fiemap_nomerge.ksh \
+	functional/fiemap/fiemap_range.ksh \
+	functional/fiemap/fiemap_removal.ksh \
+	functional/fiemap/fiemap_sanity.ksh \
+	functional/fiemap/fiemap_shared.ksh \
+	functional/fiemap/fiemap_stress.ksh \
+	functional/fiemap/setup.ksh \
 	functional/gang_blocks/cleanup.ksh \
 	functional/gang_blocks/gang_blocks_001_pos.ksh \
 	functional/gang_blocks/gang_blocks_ddt_copies.ksh \

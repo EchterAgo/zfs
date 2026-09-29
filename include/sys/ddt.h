@@ -412,6 +412,8 @@ extern void ddt_prefetch_all(spa_t *spa);
 
 extern boolean_t ddt_class_contains(spa_t *spa, ddt_class_t max_class,
     const blkptr_t *bp);
+extern boolean_t ddt_class_contains_open(spa_t *spa,
+    ddt_class_t max_class, const blkptr_t *bp);
 
 extern void ddt_alloc_entry_io(ddt_entry_t *dde);
 
