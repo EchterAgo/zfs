@@ -7,6 +7,11 @@ NAME := $(shell awk '$$1 == "Name:" { print $$2; }' META)
 LINUX_MIN  := $(shell awk '/Linux-Minimum:/{print $$2}' META)
 LINUX_NEXT := $(shell awk -F'[ .]' '/Linux-Maximum:/{print $$2 "." $$3+1}' META)
 
+# Use the full ZFS release (version-release, where release embeds the
+# git commit for working builds) as the DKMS module version, so that
+# /usr/src trees and dkms module versions differ between builds.
+DKMS_VERSION := @VERSION@-@RELEASE@
+
 DKMSFILES := module include config zfs.release.in autogen.sh copy-builtin META AUTHORS \
 		COPYRIGHT LICENSE README.md CODE_OF_CONDUCT.md NEWS NOTICE RELEASES.md
 
@@ -80,12 +85,12 @@ override_dh_auto_install:
 
 	@# Install the DKMS source.
 	@# We only want the files needed to build the modules
-	install -D -t '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DEB_VERSION_UPSTREAM)/scripts' \
+	install -D -t '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DKMS_VERSION)/scripts' \
 		'$(CURDIR)/scripts/dkms.postbuild' '$(CURDIR)/scripts/objtool-wrapper.in'
-	$(foreach file,$(DKMSFILES),mv '$(CURDIR)/$(NAME)-$(DEB_VERSION_UPSTREAM)/$(file)' '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DEB_VERSION_UPSTREAM)' || exit 1;)
+	$(foreach file,$(DKMSFILES),mv '$(CURDIR)/$(NAME)-$(DEB_VERSION_UPSTREAM)/$(file)' '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DKMS_VERSION)' || exit 1;)
 
 	@# Only ever build Linux modules
-	echo 'SUBDIRS = linux' > '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DEB_VERSION_UPSTREAM)/include/os/Makefile.am'
+	echo 'SUBDIRS = linux' > '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DKMS_VERSION)/include/os/Makefile.am'
 
 	@# Hellish awk line:
 	@#  * Deletes from configure.ac the parts not needed for building the kernel module
@@ -99,25 +104,25 @@ override_dh_auto_install:
 	awk '/^AC_CONFIG_FILES\(\[/,/\]\)/ {\
 		if ($$0 !~ /^(AC_CONFIG_FILES\(\[([ \t]+)?$$|\]\)([ \t]+)?$$|([ \t]+)?(include\/(Makefile|sys|os\/(Makefile|linux))|module\/|Makefile([ \t]+)?$$|zfs\.release([ \t]+)?$$))|scripts\/objtool-wrapper.*\]\)$$/) \
 		{next} } {print}' \
-		'$(CURDIR)/$(NAME)-$(DEB_VERSION_UPSTREAM)/configure.ac' | sed '/ZFS_AC_PACKAGE/d' > '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DEB_VERSION_UPSTREAM)/configure.ac'
+		'$(CURDIR)/$(NAME)-$(DEB_VERSION_UPSTREAM)/configure.ac' | sed '/ZFS_AC_PACKAGE/d' > '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DKMS_VERSION)/configure.ac'
 	@# Set "SUBDIRS = module include" for CONFIG_KERNEL and remove SUBDIRS for all other configs.
 	@# Do not regenerate zfs_gitrev.h during dkms build
 	sed '1,/CONFIG_KERNEL/s/SUBDIRS.*=.*//g;s/SUBDIRS.*=.*/SUBDIRS = module include/g;/make_gitrev.sh/d' \
-		'$(CURDIR)/$(NAME)-$(DEB_VERSION_UPSTREAM)/Makefile.am' > '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DEB_VERSION_UPSTREAM)/Makefile.am'
+		'$(CURDIR)/$(NAME)-$(DEB_VERSION_UPSTREAM)/Makefile.am' > '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DKMS_VERSION)/Makefile.am'
 	@# Sanity test
-	grep -q 'SUBDIRS = module include' '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DEB_VERSION_UPSTREAM)/Makefile.am'
-	sed -i '/rpm.Makefile/d' $(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DEB_VERSION_UPSTREAM)/Makefile.am
-	sed -i '/cmd.Makefile/d' $(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DEB_VERSION_UPSTREAM)/Makefile.am
-	sed -i '/contrib.Makefile/d' $(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DEB_VERSION_UPSTREAM)/Makefile.am
-	sed -i '/etc.Makefile/d' $(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DEB_VERSION_UPSTREAM)/Makefile.am
-	sed -i '/lib.Makefile/d' $(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DEB_VERSION_UPSTREAM)/Makefile.am
-	sed -i '/man.Makefile/d' $(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DEB_VERSION_UPSTREAM)/Makefile.am
-	sed -i '/scripts.Makefile/d' $(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DEB_VERSION_UPSTREAM)/Makefile.am
-	sed -i '/tests.Makefile/d' $(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DEB_VERSION_UPSTREAM)/Makefile.am
-	sed -i '/udev.Makefile/d' $(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DEB_VERSION_UPSTREAM)/Makefile.am
+	grep -q 'SUBDIRS = module include' '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DKMS_VERSION)/Makefile.am'
+	sed -i '/rpm.Makefile/d' $(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DKMS_VERSION)/Makefile.am
+	sed -i '/cmd.Makefile/d' $(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DKMS_VERSION)/Makefile.am
+	sed -i '/contrib.Makefile/d' $(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DKMS_VERSION)/Makefile.am
+	sed -i '/etc.Makefile/d' $(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DKMS_VERSION)/Makefile.am
+	sed -i '/lib.Makefile/d' $(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DKMS_VERSION)/Makefile.am
+	sed -i '/man.Makefile/d' $(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DKMS_VERSION)/Makefile.am
+	sed -i '/scripts.Makefile/d' $(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DKMS_VERSION)/Makefile.am
+	sed -i '/tests.Makefile/d' $(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DKMS_VERSION)/Makefile.am
+	sed -i '/udev.Makefile/d' $(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DKMS_VERSION)/Makefile.am
 	@# Run autogen on the stripped source tree
-	cd '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DEB_VERSION_UPSTREAM)'; ./autogen.sh
-	rm -fr '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DEB_VERSION_UPSTREAM)/autom4te.cache'
+	cd '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DKMS_VERSION)'; ./autogen.sh
+	rm -fr '$(CURDIR)/debian/tmp/usr/src/$(NAME)-$(DKMS_VERSION)/autom4te.cache'
 
 	chmod a-x '$(CURDIR)/debian/tmp/etc/zfs/zfs-functions'
 	chmod a-x '$(CURDIR)/debian/tmp/etc/default/zfs'
@@ -126,7 +131,7 @@ override_dh_python3:
 	dh_python3 -p openzfs-python3-pyzfs
 
 override_dh_dkms:
-	'$(CURDIR)/scripts/dkms.mkconf' -n $(NAME) -v $(DEB_VERSION_UPSTREAM) -f '$(CURDIR)/scripts/zfs-dkms.dkms'
+	'$(CURDIR)/scripts/dkms.mkconf' -n $(NAME) -v $(DKMS_VERSION) -f '$(CURDIR)/scripts/zfs-dkms.dkms'
 	dh_dkms
 	rm -f '$(CURDIR)/scripts/zfs-dkms.dkms'
 
